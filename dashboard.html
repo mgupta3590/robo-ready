@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ROBO-READY · Admin Dashboard</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+#login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #0f172a, #1e293b); }
+.login-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 2.5rem; width: 360px; text-align: center; }
+.login-card h1 { color: #f59e0b; font-size: 1.5rem; letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+.login-card p { color: #94a3b8; font-size: 0.85rem; margin-bottom: 2rem; }
+.login-card input { width: 100%; padding: 0.75rem 1rem; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #e2e8f0; font-size: 1rem; margin-bottom: 1rem; outline: none; }
+.login-card input:focus { border-color: #f59e0b; }
+.login-card button { width: 100%; padding: 0.75rem; background: #f59e0b; color: #0f172a; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; letter-spacing: 0.05em; }
+.login-card button:hover { background: #fbbf24; }
+.login-error { color: #f87171; font-size: 0.8rem; margin-top: 0.5rem; display: none; }
+#dashboard { display: none; }
+.header { background: #1e293b; border-bottom: 1px solid #334155; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+.header h1 { color: #f59e0b; font-size: 1.2rem; letter-spacing: 0.08em; }
+.header-actions { display: flex; align-items: center; gap: 1rem; }
+.refresh-indicator { font-size: 0.75rem; color: #64748b; }
+.btn { padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
+.btn-outline { background: transparent; border: 1px solid #475569; color: #94a3b8; }
+.btn-outline:hover { border-color: #94a3b8; color: #e2e8f0; }
+.btn-danger { background: #dc2626; color: white; }
+.btn-danger:hover { background: #ef4444; }
+.main { padding: 1.5rem; }
+.stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+.stat-card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 1.25rem; }
+.stat-card .value { font-size: 2rem; font-weight: 700; color: #f59e0b; line-height: 1; }
+.stat-card .label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.4rem; }
+.table-section { background: #1e293b; border: 1px solid #334155; border-radius: 10px; overflow: hidden; }
+.table-header { padding: 1rem 1.25rem; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
+.table-header h2 { font-size: 0.9rem; color: #94a3b8; letter-spacing: 0.05em; }
+.search-box { padding: 0.4rem 0.75rem; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #e2e8f0; font-size: 0.85rem; outline: none; width: 220px; }
+.search-box:focus { border-color: #f59e0b; }
+table { width: 100%; border-collapse: collapse; }
+th { padding: 0.75rem 1rem; text-align: left; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; border-bottom: 1px solid #334155; background: #0f172a; }
+td { padding: 0.75rem 1rem; font-size: 0.85rem; border-bottom: 1px solid #1e293b; }
+tr:hover td { background: rgba(255,255,255,0.02); }
+.badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; }
+.badge-green { background: rgba(34,197,94,0.15); color: #4ade80; }
+.badge-red { background: rgba(239,68,68,0.15); color: #f87171; }
+.badge-yellow { background: rgba(245,158,11,0.1); color: #fbbf24; }
+.badge-gray { background: rgba(100,116,139,0.2); color: #94a3b8; }
+.action-btns { display: flex; gap: 0.4rem; }
+.btn-approve { background: rgba(34,197,94,0.2); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.7rem; cursor: pointer; }
+.btn-approve:hover { background: rgba(34,197,94,0.35); }
+.btn-revoke { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.7rem; cursor: pointer; }
+.btn-revoke:hover { background: rgba(239,68,68,0.3); }
+.nav-links { display: flex; gap: 1rem; margin-top: 1.5rem; }
+.nav-link { padding: 0.6rem 1.2rem; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #94a3b8; text-decoration: none; font-size: 0.8rem; transition: all 0.2s; }
+.nav-link:hover { border-color: #f59e0b; color: #f59e0b; }
+.loading { text-align: center; padding: 3rem; color: #64748b; }
+@media (max-width: 768px) { .stats-bar { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-card">
+    <h1>ROBO-READY</h1>
+    <p>Admin Dashboard · Secure Login</p>
+    <input type="password" id="pwd-input" placeholder="Enter password" onkeydown="if(event.key==='Enter')tryLogin()" />
+    <button onclick="tryLogin()">Login</button>
+    <div class="login-error" id="login-error">Incorrect password. Please try again.</div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="header">
+    <h1>ROBO-READY · Admin Dashboard</h1>
+    <div class="header-actions">
+      <span class="refresh-indicator" id="refresh-indicator">Auto-refreshes every 60s</span>
+      <button class="btn btn-outline" onclick="loadData()">↻ Refresh</button>
+      <button class="btn btn-outline" onclick="logout()">Logout</button>
+    </div>
+  </div>
+  <div class="main">
+    <div class="stats-bar">
+      <div class="stat-card"><div class="value" id="stat-total">—</div><div class="label">Total Participants</div></div>
+      <div class="stat-card"><div class="value" id="stat-assessment">—</div><div class="label">Assessment Done</div></div>
+      <div class="stat-card"><div class="value" id="stat-feedback">—</div><div class="label">Feedback Done</div></div>
+      <div class="stat-card"><div class="value" id="stat-both">—</div><div class="label">Both Complete</div></div>
+    </div>
+    <div class="table-section">
+      <div class="table-header">
+        <h2>Participants</h2>
+        <input type="text" class="search-box" id="search-box" placeholder="Search by name or email..." oninput="filterTable()" />
+      </div>
+      <div id="table-container">
+        <div class="loading">Loading participants...</div>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="https://mgupta3590.github.io/robo-ready/" class="nav-link" target="_blank">→ Assessment Page</a>
+      <a href="https://mgupta3590.github.io/roboready-feedback/" class="nav-link" target="_blank">→ Feedback Form</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxI2yxtWP3X6caPCotPXD-1VDNEwGwu06RaiwemNxRfu3WJ5417KPzu7OB3Mgrl085PgA/exec';
+const PASSWORD = 'roboready2026';
+let allParticipants = [];
+let refreshTimer = null;
+let lastRefresh = null;
+
+function tryLogin() {
+  const pwd = document.getElementById('pwd-input').value;
+  if (pwd === PASSWORD) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadData();
+    startAutoRefresh();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+    document.getElementById('pwd-input').value = '';
+  }
+}
+
+function logout() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('pwd-input').value = '';
+  if (refreshTimer) clearInterval(refreshTimer);
+}
+
+function startAutoRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(() => {
+    loadData();
+  }, 60000);
+}
+
+function loadData() {
+  const ind = document.getElementById('refresh-indicator');
+  if (ind) ind.textContent = 'Loading...';
+  fetch(SCRIPT_URL + '?action=participants')
+    .then(r => r.json())
+    .then(data => {
+      allParticipants = data.participants || [];
+      renderStats();
+      renderTable(allParticipants);
+      lastRefresh = new Date();
+      if (ind) ind.textContent = 'Last refreshed: ' + lastRefresh.toLocaleTimeString();
+    })
+    .catch(err => {
+      console.error('Error loading data:', err);
+      if (ind) ind.textContent = 'Error loading data';
+    });
+}
+
+function renderStats() {
+  const total = allParticipants.length;
+  const assessment = allParticipants.filter(p => p.assessmentDone === 'Yes').length;
+  const feedback = allParticipants.filter(p => p.feedbackDone === 'Yes').length;
+  const both = allParticipants.filter(p => p.assessmentDone === 'Yes' && p.feedbackDone === 'Yes').length;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-assessment').textContent = assessment;
+  document.getElementById('stat-feedback').textContent = feedback;
+  document.getElementById('stat-both').textContent = both;
+}
+
+function renderTable(participants) {
+  const container = document.getElementById('table-container');
+  if (!participants.length) {
+    container.innerHTML = '<div class="loading">No participants yet.</div>';
+    return;
+  }
+  const rows = participants.map(p => {
+    const bothDone = p.assessmentDone === 'Yes' && p.feedbackDone === 'Yes';
+    const approved = p.certificateApproved === 'Yes';
+    const passed = p.assessmentPassed === 'Yes';
+    const certBadge = approved
+      ? '<span class="badge badge-green">✓ Approved</span>'
+      : '<span class="badge badge-gray">Pending</span>';
+    const passBadge = p.assessmentDone === 'Yes'
+      ? (passed ? '<span class="badge badge-green">Pass</span>' : '<span class="badge badge-red">Fail</span>')
+      : '<span class="badge badge-gray">—</span>';
+    const bothBadge = bothDone
+      ? '<span class="badge badge-green">✓</span>'
+      : '<span class="badge badge-gray">✗</span>';
+    let actions = '';
+    if (bothDone && !approved) {
+      actions += '<button class="btn-approve" onclick="approveCert('' + encodeURIComponent(p.email) + '')">Approve</button>';
+    }
+    if (approved) {
+      actions += '<button class="btn-revoke" onclick="revokeCert('' + encodeURIComponent(p.email) + '')">Revoke</button>';
+    }
+    return '<tr>' +
+      '<td>' + (p.name || '') + '</td>' +
+      '<td style="color:#64748b;font-size:0.8rem;">' + (p.email || '') + '</td>' +
+      '<td>' + (p.assessmentDone === 'Yes' ? '<span class="badge badge-green">✓</span>' : '<span class="badge badge-red">✗</span>') + '</td>' +
+      '<td>' + (p.assessmentScore || '—') + '</td>' +
+      '<td>' + passBadge + '</td>' +
+      '<td>' + (p.feedbackDone === 'Yes' ? '<span class="badge badge-green">✓</span>' : '<span class="badge badge-red">✗</span>') + '</td>' +
+      '<td>' + bothBadge + '</td>' +
+      '<td>' + certBadge + '</td>' +
+      '<td><div class="action-btns">' + actions + '</div></td>' +
+      '</tr>';
+  }).join('');
+  container.innerHTML = '<table>' +
+    '<thead><tr><th>Name</th><th>Email</th><th>Assessment ✓/✗</th><th>Score</th><th>Pass/Fail</th><th>Feedback ✓/✗</th><th>Both ✓/✗</th><th>Certificate</th><th>Action</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody>' +
+    '</table>';
+}
+
+function filterTable() {
+  const query = document.getElementById('search-box').value.toLowerCase();
+  const filtered = allParticipants.filter(p =>
+    (p.name || '').toLowerCase().includes(query) ||
+    (p.email || '').toLowerCase().includes(query)
+  );
+  renderTable(filtered);
+}
+
+function approveCert(emailEncoded) {
+  const email = decodeURIComponent(emailEncoded);
+  fetch(SCRIPT_URL + '?action=approveCertificate&email=' + encodeURIComponent(email))
+    .then(r => r.json())
+    .then(() => loadData())
+    .catch(err => { console.error('Approve error:', err); loadData(); });
+}
+
+function revokeCert(emailEncoded) {
+  const email = decodeURIComponent(emailEncoded);
+  if (!confirm('Revoke certificate for ' + email + '?')) return;
+  fetch(SCRIPT_URL + '?action=revokeCertificate&email=' + encodeURIComponent(email))
+    .then(r => r.json())
+    .then(() => loadData())
+    .catch(err => { console.error('Revoke error:', err); loadData(); });
+}
+</script>
+</body>
+</html>
